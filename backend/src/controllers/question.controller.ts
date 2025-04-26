@@ -141,4 +141,21 @@ export const deleteQuestion = async (req: Request, res: Response): Promise<Respo
     console.error('Error deleting question:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
+};
+
+// Get all questions for a quiz for users (doesn't include correct answers)
+export const getQuestionsByQuizForUser = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { quizId } = req.params;
+    
+    const questions = await Question.findAll({
+      where: { quiz_id: parseInt(quizId) },
+      attributes: ['id', 'quiz_id', 'question_statement', 'option1', 'option2', 'option3', 'option4']
+    });
+    
+    return res.status(200).json(questions);
+  } catch (error) {
+    console.error('Error getting questions for user:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
 }; 

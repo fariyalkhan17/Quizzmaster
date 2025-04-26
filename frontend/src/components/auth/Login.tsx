@@ -40,9 +40,13 @@ const Login: React.FC = () => {
     setError(null);
 
     try {
+      console.log('Logging in with:', formData.username);
       const userData = await login(formData.username, formData.password);
+      console.log('Login successful, user data:', userData);
+      console.log('Is admin?', userData.role === 'admin');
       navigate(userData.role === 'admin' ? '/admin' : '/dashboard');
     } catch (error: any) {
+      console.error('Login error:', error);
       setError(error.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);

@@ -4,7 +4,7 @@ import { Quiz, Chapter, Question } from '../models';
 // Create a new quiz (admin only)
 export const createQuiz = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { title, description, chapterId, timeLimit } = req.body;
+    const { chapterId, title, description, timeLimit, passingScore } = req.body;
     
     // Check if chapter exists
     const chapter = await Chapter.findByPk(chapterId);
@@ -12,24 +12,12 @@ export const createQuiz = async (req: Request, res: Response): Promise<Response>
       return res.status(404).json({ message: 'Chapter not found' });
     }
     
-    // Check if quiz exists in the chapter
-    const quizExists = await Quiz.findOne({ 
-      where: { 
-        name: title,
-        chapter_id: chapterId 
-      } 
-    });
-    
-    if (quizExists) {
-      return res.status(400).json({ message: 'Quiz already exists in this chapter' });
-    }
-    
     const quiz = await Quiz.create({
+      chapter_id: chapterId,
       name: title,
       remarks: description,
-      chapter_id: chapterId,
-      date_of_quiz: new Date(),
-      time_duration: timeLimit || '00:30' // Default 30 minutes
+      time_duration: timeLimit,
+      date_of_quiz: new Date()
     });
     
     return res.status(201).json({
@@ -49,8 +37,7 @@ export const getAllQuizzes = async (req: Request, res: Response): Promise<Respon
       include: [
         {
           model: Chapter,
-          as: 'chapter',
-          attributes: ['id', 'name']
+          as: 'chapter'
         }
       ]
     });
@@ -62,13 +49,19 @@ export const getAllQuizzes = async (req: Request, res: Response): Promise<Respon
   }
 };
 
-// Get quizzes by chapter ID
+// Get quizzes by chapter
 export const getQuizzesByChapter = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { chapterId } = req.params;
     
     const quizzes = await Quiz.findAll({
-      where: { chapter_id: parseInt(chapterId) }
+      where: { chapter_id: parseInt(chapterId) },
+      include: [
+        {
+          model: Chapter,
+          as: 'chapter'
+        }
+      ]
     });
     
     return res.status(200).json(quizzes);
@@ -111,7 +104,7 @@ export const getQuizById = async (req: Request, res: Response): Promise<Response
 export const updateQuiz = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
-    const { title, description, chapterId, timeLimit } = req.body;
+    const { title, description, timeLimit, passingScore, chapterId } = req.body;
     
     const quiz = await Quiz.findByPk(parseInt(id));
     
@@ -130,8 +123,9 @@ export const updateQuiz = async (req: Request, res: Response): Promise<Response>
     await quiz.update({
       name: title || quiz.get('name'),
       remarks: description || quiz.get('remarks'),
+      time_duration: timeLimit || quiz.get('time_duration'),
       chapter_id: chapterId || quiz.get('chapter_id'),
-      time_duration: timeLimit || quiz.get('time_duration')
+      date_of_quiz: quiz.get('date_of_quiz') || new Date()
     });
     
     return res.status(200).json({
@@ -162,4 +156,4 @@ export const deleteQuiz = async (req: Request, res: Response): Promise<Response>
     console.error('Error deleting quiz:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
-}; 
+};

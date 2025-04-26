@@ -16,21 +16,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-import authRoutes from './routes/auth.routes';
-import userRoutes from './routes/user.routes';
-import subjectRoutes from './routes/subject.routes';
-import chapterRoutes from './routes/chapter.routes';
-import quizRoutes from './routes/quiz.routes';
-import questionRoutes from './routes/question.routes';
-import scoreRoutes from './routes/score.routes';
+import routes from './routes';
 
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/subjects', subjectRoutes);
-app.use('/api/chapters', chapterRoutes);
-app.use('/api/quizzes', quizRoutes);
-app.use('/api/questions', questionRoutes);
-app.use('/api/scores', scoreRoutes);
+app.use('/api', routes);
 
 // Root route
 app.get('/', (req: Request, res: Response) => {

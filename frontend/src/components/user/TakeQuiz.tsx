@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Card, Button, ProgressBar, Alert, Spinner, Form, Modal } from 'react-bootstrap';
-import { getQuizById, getQuestionsByQuiz, submitQuiz, Quiz, Question, Option } from '../../services/api';
+import { getQuizById, getQuestionsByQuizForUser, submitQuiz, Quiz, Question, Option } from '../../services/api';
 import Navigation from '../common/Navigation';
 
 interface QuizParams extends Record<string, string | undefined> {
@@ -44,10 +44,16 @@ const TakeQuiz: React.FC = () => {
         const quizResponse = await getQuizById(quizId);
         const quizData = quizResponse.data;
         setQuiz(quizData);
-        setTimeLeft(quizData.timeLimit * 60); // Convert minutes to seconds
         
-        // Fetch questions
-        const questionsResponse = await getQuestionsByQuiz(quizId);
+        // Set timeLimit based on either timeLimit or time_duration property
+        const timeLimit = quizData.timeLimit || 
+          (quizData.time_duration ? parseInt(quizData.time_duration.split(':')[0]) * 60 + 
+          parseInt(quizData.time_duration.split(':')[1]) : 30 * 60);
+        
+        setTimeLeft(timeLimit);
+        
+        // Fetch questions for user
+        const questionsResponse = await getQuestionsByQuizForUser(quizId);
         const questionsData = questionsResponse.data;
         setQuestions(questionsData);
         
@@ -248,21 +254,72 @@ const TakeQuiz: React.FC = () => {
           <Card.Body>
             <ProgressBar now={progress} label={`${Math.round(progress)}%`} className="mb-4" />
             
-            <Card.Title as="h4">{currentQuestion?.text}</Card.Title>
+            <Card.Title as="h4">{currentQuestion?.question_statement || currentQuestion?.text}</Card.Title>
             
             <Form className="mt-4">
-              {currentQuestion?.options?.map(option => (
-                <Form.Check
-                  key={option.id}
-                  type="radio"
-                  id={`option-${option.id}`}
-                  name="quizOption"
-                  label={option.text}
-                  className="mb-3 fs-5"
-                  checked={selectedOption === option.id}
-                  onChange={() => handleOptionSelect(option.id)}
-                />
-              ))}
+              {currentQuestion?.options ? (
+                // If options array is available, use it
+                currentQuestion.options.map(option => (
+                  <Form.Check
+                    key={option.id}
+                    type="radio"
+                    id={`option-${option.id}`}
+                    name="quizOption"
+                    label={option.text}
+                    className="mb-3 fs-5"
+                    checked={selectedOption === option.id}
+                    onChange={() => handleOptionSelect(option.id)}
+                  />
+                ))
+              ) : (
+                // Otherwise, create options from option1-4 fields
+                <>
+                  {currentQuestion?.option1 && (
+                    <Form.Check
+                      type="radio"
+                      id="option-1"
+                      name="quizOption"
+                      label={currentQuestion.option1}
+                      className="mb-3 fs-5"
+                      checked={selectedOption === 1}
+                      onChange={() => handleOptionSelect(1)}
+                    />
+                  )}
+                  {currentQuestion?.option2 && (
+                    <Form.Check
+                      type="radio"
+                      id="option-2"
+                      name="quizOption"
+                      label={currentQuestion.option2}
+                      className="mb-3 fs-5"
+                      checked={selectedOption === 2}
+                      onChange={() => handleOptionSelect(2)}
+                    />
+                  )}
+                  {currentQuestion?.option3 && (
+                    <Form.Check
+                      type="radio"
+                      id="option-3"
+                      name="quizOption"
+                      label={currentQuestion.option3}
+                      className="mb-3 fs-5"
+                      checked={selectedOption === 3}
+                      onChange={() => handleOptionSelect(3)}
+                    />
+                  )}
+                  {currentQuestion?.option4 && (
+                    <Form.Check
+                      type="radio"
+                      id="option-4"
+                      name="quizOption"
+                      label={currentQuestion.option4}
+                      className="mb-3 fs-5"
+                      checked={selectedOption === 4}
+                      onChange={() => handleOptionSelect(4)}
+                    />
+                  )}
+                </>
+              )}
             </Form>
           </Card.Body>
           

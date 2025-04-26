@@ -17,12 +17,10 @@ import QuizResults from './components/user/QuizResults';
 // Admin
 import AdminDashboard from './components/admin/Dashboard';
 import ManageUsers from './components/admin/ManageUsers';
-
-// Create placeholder components for missing admin components
-const ManageSubjects = () => <div>Subjects Management (Coming Soon)</div>;
-const ManageChapters = () => <div>Chapters Management (Coming Soon)</div>;
-const ManageQuizzes = () => <div>Quizzes Management (Coming Soon)</div>;
-const ManageQuestions = () => <div>Questions Management (Coming Soon)</div>;
+import ManageSubjects from './components/admin/ManageSubjects';
+import ManageChapters from './components/admin/ManageChapters';
+import ManageQuizzes from './components/admin/ManageQuizzes';
+import ManageQuestions from './components/admin/ManageQuestions';
 
 // Context
 import { AuthProvider } from './context/AuthContext';
